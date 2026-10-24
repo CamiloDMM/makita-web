@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block titulo %}Recepción{% endblock %}
+{% block contenido %}
+<div class="envoltura">
+  <div class="diag-cabeza">
+    <div>
+      <span class="rotulo">Módulo 03</span>
+      <h1 class="titulo-seccion palabras">Recepción de equipos</h1>
+    </div>
+    <a class="en-taller" href="#lista"><b data-cuenta="{{ abiertas }}">0</b> equipos en taller</a>
+  </div>
+
+  <div class="recepcion">
+    <form class="planilla" id="planilla" autocomplete="off" novalidate>
+      <!-- 01 cliente -->
+      <fieldset class="bloque revela">
+        <legend><i>01</i>Cliente</legend>
+        <div class="fila-campos">
+          <div class="campo angosto">
+            <span class="et-campo">Documento</span>
+            <div class="segmento" role="radiogroup" aria-label="Tipo de documento">
+              <label><input type="radio" name="tipo_doc" value="CI" checked><span>Cédula</span></label>
+              <label><input type="radio" name="tipo_doc" value="RUC"><span>RUC</span></label>
+            </div>
+          </div>
+          <label class="campo">
+            <span class="et-campo" id="et-doc">Número de cédula</span>
+            <input name="documento" id="documento" inputmode="numeric" placeholder="4567890" required>
+            <small class="ayuda" id="ayuda-doc">Si el cliente ya vino antes, se completan sus datos.</small>
+          </label>
+        </div>
+        <label class="campo">
+          <span class="et-campo">Nombre o razón social</span>
+          <input name="nombre" id="nombre" placeholder="Juan Pérez / Construcciones del Sur S.A." required>
+        </label>
+        <div class="equipos-cliente" id="equipos-cliente" hidden></div>
+      </fieldset>
+
+      <!-- 02 equipo -->
+      <fieldset class="bloque revela">
+        <legend><i>02</i>Equipo</legend>
+        <span class="et-campo">Modelo</span>
+        <input class="buscar-modelo" id="buscar-modelo" placeholder="Buscar modelo: 9557, DHP, cepillo…">
+        <div class="modelos" id="modelos" role="radiogroup" aria-label="Modelo">
+          {% for h in herramientas %}
+          <label class="modelo-op" data-busca="{{ (h.modelo ~ ' ' ~ h.nombre ~ ' ' ~ h.linea)|lower }}">
+            <input type="radio" name="herramienta" value="{{ h.slug }}" data-modelo="{{ h.modelo }}" data-nombre="{{ h.nombre }}">
+            <span><b>{{ h.modelo }}</b><small>{{ h.nombre }}</small></span>
+          </label>
+          {% endfor %}
+        </div>
+        <label class="campo">
+          <span class="et-campo">Número de serie</span>
+          <input name="serie" id="serie" placeholder="Ej: 123456Y" style="text-transform:uppercase">
+          <small class="ayuda">Está en la etiqueta plateada del equipo. Sirve para reconocerlo si se pierde el sticker.</small>
+        </label>
+        <div class="aviso-equipo" id="aviso-serie" hidden></div>
+      </fieldset>
+
+      <!-- 03 contacto -->
+      <fieldset class="bloque revela">
+        <legend><i>03</i>Contacto</legend>
+        <label class="campo">
+          <span class="et-campo">Celular</span>
+          <input name="celular" id="celular" inputmode="tel" placeholder="0981 123 456">
+          <small class="ayuda">Para avisarle cuando el equipo esté listo.</small>
+        </label>
+      </fieldset>
+
+      <!-- 04 relato -->
+      <fieldset class="bloque revela">
+        <legend><i>04</i>Lo que cuenta el cliente</legend>
+        <label class="no-sabe"><input type="checkbox" name="cliente_no_sabe" id="no-sabe"><span class="casilla"></span>El cliente no sabe qué tiene</label>
+        <div class="sintomas-rapidos" id="sintomas-rapidos">
+          <p class="ayuda">Elegí el modelo para ver los síntomas que aplican.</p>
+        </div>
+        <label class="campo">
+          <span class="et-campo">Observaciones del cliente</span>
+          <textarea name="observaciones" rows="4" placeholder="Ej: se le cayó desde la escalera, después empezó a chispear. Pide presupuesto antes de reparar."></textarea>
+        </label>
+      </fieldset>
+
+      <!-- 05 accesorios -->
+      <fieldset class="bloque revela">
+        <legend><i>05</i>Accesorios que trae</legend>
+        <div class="fichas-acc">
+          {% for a in accesorios %}
+          <label class="acc"><input type="checkbox" name="accesorios" value="{{ a }}"><span>{{ a }}</span></label>
+          {% endfor %}
+        </div>
+        <label class="campo">
+          <span class="et-campo">Otros / detalle</span>
+          <input name="acc_otros" id="acc-otros" placeholder="Ej: 2 baterías BL1850B, maletín con la traba rota">
+        </label>
+      </fieldset>
+
+      <div class="barra-accion">
+        <span class="error-form" id="error-form" role="alert"></span>
+        <button class="boton" id="registrar" type="submit">Registrar ingreso <span class="flecha">→</span></button>
+      </div>
+    </form>
+
+    <!-- sticker en vivo -->
+    <aside class="lateral">
+      <div class="sticker vivo" id="sticker">
+        <div class="st-cab"><span>BANCO DE PRUEBAS</span><span id="st-fecha"></span></div>
+        <div class="st-num">OS-··-·····</div>
+        <div class="st-modelo" id="st-modelo">MODELO</div>
+        <dl>
+          <dt>Serie</dt><dd id="st-serie">—</dd>
+          <dt>Cliente</dt><dd id="st-cliente">—</dd>
+          <dt>Cel.</dt><dd id="st-cel">—</dd>
+        </dl>
+        <div class="st-acc" id="st-acc"></div>
+      </div>
+      <p class="nota">Vista previa del sticker. El número se asigna al registrar.</p>
+    </aside>
+  </div>
+
+  <!-- listado -->
+  <section class="lista-ordenes" id="lista">
+    <div class="panel-cab">
+      <div><h2 class="sub-titulo">Equipos ingresados</h2>
+        <p class="sub">Buscá por número de orden, serie, documento, nombre o modelo. Un lector de código de barras también sirve.</p></div>
+      <form class="buscador" method="get" action="{{ url_for('recepcion_inicio') }}#lista">
+        <input name="q" value="{{ q }}" placeholder="OS-26-00012, 123456Y, 4567890…" aria-label="Buscar">
+        <button class="boton" type="submit">Buscar</button>
+      </form>
+    </div>
+    {% if ordenes %}
+    <div class="tabla-ordenes">
+      <table>
+        <thead><tr><th>Orden</th><th>Ingreso</th><th>Cliente</th><th>Equipo</th><th>Serie</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+        {% for o in ordenes %}
+          <tr style="animation-delay: {{ loop.index0 * 30 }}ms">
+            <td class="mono"><b>{{ o.numero }}</b></td>
+            <td class="mono">{{ o.ingreso }}</td>
+            <td>{{ o.cliente }}<small>{{ o.tipo_doc }} {{ o.documento }}</small></td>
+            <td><b>{{ o.modelo }}</b><small>{{ o.herramienta }}</small></td>
+            <td class="mono">{{ o.serie }}</td>
+            <td><span class="estado e{{ estados.index(o.estado) }}">{{ o.estado }}</span></td>
+            <td><a class="ver" href="{{ url_for('recepcion_ficha', numero=o.numero) }}">Abrir →</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="vacio">{{ 'No hay resultados para «' ~ q ~ '».' if q else 'Todavía no hay equipos registrados. El primero que cargues aparece acá.' }}</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/recepcion.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Banco de Pruebas{% endblock %} · Servicio Makita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/recepcion.css') }}">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M0 0h32v22l-10 10H0z' fill='%23008e9e'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="cortina" aria-hidden="true"><span>BANCO DE PRUEBAS / {{ request.path }}</span></div>
+
+  <header class="cabecera">
+    <div class="envoltura">
+      <a class="marca" href="{{ url_for('inicio') }}">
+        <span class="marca-sello" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="8" cy="8" r="1.6" fill="#fff"/></svg>
+        </span>
+        <span class="marca-texto"><b>Banco de Pruebas</b><small>SERVICIO TÉCNICO · LÍNEA MAKITA</small></span>
+      </a>
+      <nav class="nav">
+        <a href="{{ url_for('recepcion_inicio') }}" class="{{ 'activo' if request.endpoint in ('recepcion_inicio', 'recepcion_ficha') }}"><i>01</i>Recepción</a>
+        <a href="{{ url_for('diagnostico') }}" class="{{ 'activo' if request.endpoint == 'diagnostico' }}"><i>02</i>Diagnóstico</a>
+        <a href="{{ url_for('tablero') }}" class="{{ 'activo' if request.endpoint == 'tablero' }}"><i>03</i>Garantías</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>{% block contenido %}{% endblock %}</main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <span><b>Banco de Pruebas</b> — proyecto de portafolio. Flask · PostgreSQL · Pandas.</span>
+      <span>No afiliado a Makita Corporation. Los casos de garantía son datos simulados.</span>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

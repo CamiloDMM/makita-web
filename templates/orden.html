@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block titulo %}{{ o.numero }}{% endblock %}
+{% block contenido %}
+<div class="envoltura">
+  <div class="diag-cabeza">
+    <div>
+      <a class="volver" href="{{ url_for('recepcion_inicio') }}">← Recepción</a>
+      <h1 class="titulo-seccion palabras">Orden {{ o.numero }}</h1>
+    </div>
+    <span class="estado grande e{{ estados.index(o.estado) }}">{{ o.estado }}</span>
+  </div>
+
+  <div class="avisos" id="avisos" hidden></div>
+
+  <div class="ficha-orden">
+    <aside class="lateral">
+      <div class="sticker {{ 'sellado' if nueva }}" id="sticker-imprimir">
+        <div class="st-cab"><span>BANCO DE PRUEBAS</span><span>{{ o.ingreso[:10] }}</span></div>
+        <div class="st-num">{{ o.numero }}</div>
+        <svg class="st-barras" id="barras"></svg>
+        <div class="st-modelo">{{ o.modelo }}</div>
+        <dl>
+          <dt>Serie</dt><dd>{{ o.serie }}</dd>
+          <dt>Cliente</dt><dd>{{ o.cliente }}</dd>
+          <dt>Cel.</dt><dd>{{ o.celular }}</dd>
+        </dl>
+        {% if o.accesorios %}<div class="st-acc">+ {{ o.accesorios|join(' · ') }}</div>{% endif %}
+        {% if nueva %}<span class="sello" aria-hidden="true">REGISTRADO</span>{% endif %}
+      </div>
+      <div class="acciones-ficha">
+        <button class="boton claro" onclick="window.print()">Imprimir sticker</button>
+        <a class="boton" href="{{ url_for('diagnostico', orden=o.numero) }}">Diagnosticar equipo <span class="flecha">→</span></a>
+      </div>
+    </aside>
+
+    <div class="detalle">
+      <section class="bloque">
+        <h2 class="leyenda-bloque"><i>01</i>Cliente</h2>
+        <dl class="datos">
+          <dt>Nombre</dt><dd>{{ o.cliente }}</dd>
+          <dt>{{ 'RUC' if o.tipo_doc == 'RUC' else 'Cédula' }}</dt><dd class="mono">{{ o.documento }}</dd>
+          <dt>Celular</dt><dd>{{ o.celular }}
+            {% set d = o.celular|replace(' ', '') %}
+            {% if d|length == 10 and d.startswith('09') %}
+              <a class="wa" href="https://wa.me/595{{ d[1:] }}" target="_blank" rel="noopener">WhatsApp →</a>
+            {% endif %}</dd>
+        </dl>
+      </section>
+
+      <section class="bloque">
+        <h2 class="leyenda-bloque"><i>02</i>Equipo</h2>
+        <dl class="datos">
+          <dt>Modelo</dt><dd><b>{{ o.modelo }}</b> · {{ o.herramienta }}</dd>
+          <dt>Serie</dt><dd class="mono">{{ o.serie }}</dd>
+          <dt>Ingreso</dt><dd class="mono">{{ o.ingreso }}</dd>
+          <dt>Accesorios</dt><dd>{{ o.accesorios|join(', ') if o.accesorios else 'Sin accesorios' }}</dd>
+        </dl>
+      </section>
+
+      <section class="bloque">
+        <h2 class="leyenda-bloque"><i>03</i>Lo que contó el cliente</h2>
+        {% if o.cliente_no_sabe %}
+          <p class="chapa">El cliente no sabe qué tiene</p>
+        {% elif o.sintomas %}
+          <ul class="lista-sintomas">{% for c in o.sintomas %}<li>{{ textos.get(c, c) }}</li>{% endfor %}</ul>
+        {% endif %}
+        <p class="obs">{{ o.observaciones or 'Sin observaciones.' }}</p>
+        {% if o.causa %}
+          <div class="causa-anotada"><span class="et-campo">Causa más probable según el diagnóstico</span><b>{{ o.causa }}</b></div>
+        {% endif %}
+      </section>
+
+      <section class="bloque">
+        <h2 class="leyenda-bloque"><i>04</i>Estado</h2>
+        <form method="post" action="{{ url_for('recepcion_estado', numero=o.numero) }}" class="linea-estados">
+          {% set actual = estados.index(o.estado) %}
+          {% for e in estados %}
+            <button name="estado" value="{{ e }}" class="paso-estado {{ 'hecho' if loop.index0 < actual }} {{ 'actual' if loop.index0 == actual }}">
+              <span class="punto"></span>{{ e }}</button>
+          {% endfor %}
+        </form>
+      </section>
+
+      {% if historial|length > 1 %}
+      <section class="bloque">
+        <h2 class="leyenda-bloque"><i>05</i>Historial de este equipo</h2>
+        <ul class="historial">
+          {% for h in historial %}
+            <li class="{{ 'esta' if h.numero == o.numero }}"><a href="{{ url_for('recepcion_ficha', numero=h.numero) }}">{{ h.numero }}</a><span>{{ h.ingreso }}</span><span>{{ h.estado }}</span></li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<script>
+  if (window.JsBarcode) JsBarcode("#barras", "{{ o.numero }}", { format: "CODE128", displayValue: false, height: 38, margin: 0, width: 1.6, background: "transparent" });
+  try {
+    const avisos = JSON.parse(sessionStorage.getItem("avisos") || "[]");
+    sessionStorage.removeItem("avisos");
+    if (avisos.length) {
+      const caja = document.getElementById("avisos");
+      caja.innerHTML = avisos.map((a) => `<p>${a.replace(/</g, "&lt;")}</p>`).join("");
+      caja.hidden = false;
+    }
+  } catch {}
+</script>
+{% endblock %}

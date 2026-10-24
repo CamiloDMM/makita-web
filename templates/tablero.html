@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block titulo %}Tablero de garantías{% endblock %}
+{% block contenido %}
+<div class="envoltura" id="tablero">
+  <div class="diag-cabeza">
+    <div>
+      <span class="rotulo">Módulo 03</span>
+      <h1 class="titulo-seccion palabras">Tablero de garantías</h1>
+    </div>
+    <span class="aviso-simulado">DATOS SIMULADOS · nov 2024 – oct 2026</span>
+  </div>
+
+  <form class="filtros" id="filtros" onsubmit="return false">
+    <label><span>Desde</span>
+      <select name="desde"><option value="">Inicio</option>
+        {% for m in opciones.meses %}<option value="{{ m }}">{{ m }}</option>{% endfor %}</select></label>
+    <label><span>Hasta</span>
+      <select name="hasta"><option value="">Hoy</option>
+        {% for m in opciones.meses %}<option value="{{ m }}">{{ m }}</option>{% endfor %}</select></label>
+    <label><span>Sucursal</span>
+      <select name="sucursal"><option value="">Todas</option>
+        {% for s in opciones.sucursales %}<option>{{ s }}</option>{% endfor %}</select></label>
+    <label><span>Herramienta</span>
+      <select name="herramienta"><option value="">Todas</option>
+        {% for h in opciones.herramientas %}<option value="{{ h.herramienta }}">{{ h.modelo }} · {{ h.nombre }}</option>{% endfor %}</select></label>
+    <button class="limpiar" type="reset">Limpiar</button>
+  </form>
+
+  <div class="kpis">
+    <div class="kpi"><span>Casos ingresados</span><b id="k-casos">0</b><small id="k-abiertos"></small></div>
+    <div class="kpi"><span>Tiempo de resolución</span><b id="k-mediana">0</b><small id="k-p90"></small></div>
+    <div class="kpi"><span>Cerrados dentro del SLA</span><b id="k-sla">0</b><small id="k-sla-sub"></small></div>
+    <div class="kpi"><span>Rechazados</span><b id="k-rechazo">0</b><small>desgaste o mal uso</small></div>
+    <div class="kpi"><span>Costo de garantía</span><b id="k-costo">0</b><small>repuestos + mano de obra</small></div>
+  </div>
+
+  <div class="paneles">
+    <section class="panel w12">
+      <div class="panel-cab">
+        <div><h3>Casos por mes</h3><p class="sub">Casos cerrados según resultado · línea: promedio móvil de 3 meses</p></div>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div class="leyenda" id="ley-mes"></div>
+          <button class="ver-tabla" data-tabla="t-mes">ver tabla</button>
+        </div>
+      </div>
+      <div class="grafico-mes" id="g-mes"></div>
+      <div class="tabla-datos" id="t-mes" hidden></div>
+    </section>
+
+    <section class="panel w5">
+      <h3>Fallas por herramienta</h3><p class="sub">Casos ingresados por modelo</p>
+      <div class="barras" id="g-herr"></div>
+    </section>
+
+    <section class="panel w7">
+      <div class="panel-cab">
+        <div><h3>Causas más frecuentes</h3><p class="sub">Top 10 del período filtrado</p></div>
+        <div class="leyenda"><span><i style="background:var(--teal)"></i>Cubre garantía</span><span><i style="background:var(--ambar)"></i>No cubre</span></div>
+      </div>
+      <div class="barras ancha" id="g-causas"></div>
+    </section>
+
+    <section class="panel w6">
+      <div class="panel-cab">
+        <div><h3>Tiempo de resolución por sucursal</h3><p class="sub">Días hasta cerrar una reparación o reemplazo</p></div>
+        <div class="leyenda"><span><i style="background:var(--teal);border-radius:50%"></i>Mediana</span><span><i style="background:var(--tinta-2);width:2px"></i>Percentil 90</span><span><i style="border-left:1px dashed var(--alerta);width:1px;border-radius:0"></i>SLA</span></div>
+      </div>
+      <div class="barras rango" id="g-suc"></div>
+    </section>
+
+    <section class="panel w6">
+      <h3>Herramienta × causa</h3><p class="sub">Dónde se concentran las 8 causas principales</p>
+      <div class="matriz" id="g-matriz"></div>
+      <div class="escala-color">0<span></span>máx.</div>
+    </section>
+  </div>
+
+  <div class="hallazgos" id="hallazgos"></div>
+  <p class="nota" style="margin-bottom:70px">Las lecturas se recalculan con cada filtro. Todos los datos son generados (seed.py) para fines de demostración.</p>
+  <div class="tip" id="tip"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tablero.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,4 @@
+flask>=3.0
+sqlalchemy>=2.0
+pandas>=2.2
+psycopg[binary]>=3.2

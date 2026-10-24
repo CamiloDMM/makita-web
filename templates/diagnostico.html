@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block titulo %}Diagnóstico{% endblock %}
+{% block contenido %}
+<div class="envoltura">
+  <div class="diag-cabeza">
+    <div>
+      <span class="rotulo">Módulo 02</span>
+      <h1 class="titulo-seccion palabras">Diagnóstico de fallas</h1>
+    </div>
+    <div class="pasador" id="pasador">
+      <div class="actual"><i>01</i>Herramienta</div>
+      <div><i>02</i>Síntomas</div>
+      <div><i>03</i>Informe</div>
+    </div>
+  </div>
+
+  {% if orden %}
+  <div class="orden-vinculada">
+    <span class="chapa">Orden</span><b>{{ orden.numero }}</b>
+    <span>{{ orden.modelo }} · serie {{ orden.serie }} · {{ orden.cliente }}</span>
+    <a href="{{ url_for('recepcion_ficha', numero=orden.numero) }}">Ver orden →</a>
+  </div>
+  {% endif %}
+
+  <!-- 01 · herramienta -->
+  <section class="etapa entra" id="etapa-1">
+    <div class="filtro-linea" role="group" aria-label="Filtrar por línea">
+      <button class="activo" data-linea="">Todas</button>
+      <button data-linea="Cable 220V">Cable 220V</button>
+      <button data-linea="LXT 18V">Inalámbricas LXT 18V</button>
+    </div>
+    <div class="rejilla-herr">
+      {% for h in herramientas %}
+      <button class="herr {{ 'lxt' if 'LXT' in h.linea }}" data-slug="{{ h.slug }}" data-linea="{{ h.linea }}"
+              style="animation: etapa-entra .6s var(--ease) {{ loop.index0 * 45 }}ms backwards">
+        <span class="linea"><span class="chapa">{{ h.linea }}</span><span class="pot">{{ h.potencia }}</span></span>
+        <span class="modelo">{{ h.modelo }}</span>
+        <span class="nombre">{{ h.nombre }}</span>
+        <span class="esquina" aria-hidden="true">→</span>
+      </button>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- 02 · síntomas -->
+  <section class="etapa" id="etapa-2" hidden>
+    <div class="ficha">
+      <span class="modelo" id="f-modelo"></span>
+      <div><small id="f-linea"></small><b id="f-nombre"></b><small id="f-casos"></small></div>
+      <button class="cambiar" id="cambiar">Cambiar herramienta</button>
+    </div>
+    <div class="grupos" id="grupos"></div>
+    <div class="barra-accion">
+      <span class="contador"><b id="contador">0</b> síntomas marcados · podés marcar varios</span>
+      <button class="boton" id="diagnosticar" disabled>Diagnosticar <span class="flecha">→</span></button>
+    </div>
+  </section>
+
+  <!-- 03 · informe -->
+  <section class="etapa" id="etapa-3" hidden>
+    <div class="analisis" id="analisis">
+      <svg viewBox="0 0 220 220" aria-hidden="true">
+        <circle cx="110" cy="110" r="104" fill="none" stroke="#131516" stroke-width="2"/>
+        <g class="rotor">
+          <circle cx="110" cy="110" r="86" fill="#008e9e"/>
+          <g stroke="#fff" stroke-width="3">
+            <line x1="110" y1="30" x2="110" y2="70"/><line x1="110" y1="150" x2="110" y2="190"/>
+            <line x1="30" y1="110" x2="70" y2="110"/><line x1="150" y1="110" x2="190" y2="110"/>
+          </g>
+          <circle cx="110" cy="110" r="30" fill="#131516"/>
+          <circle cx="110" cy="110" r="10" fill="#efeee9"/>
+        </g>
+      </svg>
+      <div>
+        <div class="rpm"><span id="rpm">0</span><small>min⁻¹</small></div>
+        <ul class="bitacora" id="bitacora"></ul>
+      </div>
+    </div>
+    <div id="informe"></div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>window.TOTAL_REGLAS = {{ total_reglas }}; window.ORDEN = {{ orden|tojson }};</script>
+<script src="{{ url_for('static', filename='js/diagnostico.js') }}"></script>
+{% endblock %}

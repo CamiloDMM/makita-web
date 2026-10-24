@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<section class="portada">
+  <div class="envoltura">
+    <div>
+      <span class="rotulo">Taller de servicio · Orden abierta</span>
+      <h1 class="palabras">El síntoma<br>ya dice<br><em>qué se rompió.</em></h1>
+      <p class="bajada revela">Un asistente para el mostrador de servicio técnico: elegís la herramienta,
+        marcás lo que hace mal, y te devuelve las causas más probables con los pasos para
+        revisarlas. Al lado, el tablero de garantías para ver dónde se va el tiempo y la plata.</p>
+      <div class="acciones revela">
+        <a class="boton" href="{{ url_for('diagnostico') }}">Empezar diagnóstico <span class="flecha">→</span></a>
+        <a class="boton claro" href="{{ url_for('tablero') }}">Ver tablero de garantías</a>
+      </div>
+    </div>
+
+    <div class="disco-caja revela" aria-hidden="true">
+      <svg class="disco" viewBox="0 0 500 500">
+        <defs>
+          <path id="anillo" d="M250,250 m-150,0 a150,150 0 1,1 300,0 a150,150 0 1,1 -300,0"/>
+          <radialGradient id="metal" cx="50%" cy="45%" r="60%">
+            <stop offset="0" stop-color="#3a3f42"/><stop offset="1" stop-color="#151718"/>
+          </radialGradient>
+        </defs>
+        <circle cx="250" cy="250" r="240" fill="url(#metal)"/>
+        <circle cx="250" cy="250" r="240" fill="none" stroke="#000" stroke-width="2"/>
+        <circle cx="250" cy="250" r="226" fill="none" stroke="#2a2e30" stroke-width="1"/>
+        <g stroke="#262a2c" stroke-width="1">
+          <circle cx="250" cy="250" r="214" fill="none"/><circle cx="250" cy="250" r="204" fill="none"/>
+        </g>
+        <circle cx="250" cy="250" r="176" fill="#008e9e"/>
+        <circle cx="250" cy="250" r="176" fill="none" stroke="#fff" stroke-width="3"/>
+        <text font-family="JetBrains Mono, monospace" font-size="15" fill="#fff" letter-spacing="3">
+          <textPath href="#anillo">115 × 1,0 × 22,23 mm · 13.300 min⁻¹ · 80 m/s · A60T-BF · INOX ·</textPath>
+        </text>
+        <circle cx="250" cy="250" r="120" fill="#131516"/>
+        <text x="250" y="232" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="46" fill="#fff" style="font-variation-settings:'wdth' 62">BANCO</text>
+        <text x="250" y="270" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="22" fill="#22c3d1" letter-spacing="6" style="font-variation-settings:'wdth' 62">DE PRUEBAS</text>
+        <path d="M200 296 h100" stroke="#fff" stroke-width="2"/>
+        <circle cx="250" cy="250" r="26" fill="#d6dadc"/>
+        <circle cx="250" cy="250" r="12" fill="#efeee9"/>
+      </svg>
+      <span class="disco-dato a">⌀ 115 mm</span>
+      <span class="disco-dato b">pasá el mouse: 13.300 rpm</span>
+    </div>
+  </div>
+</section>
+
+<div class="cinta" aria-hidden="true">
+  <div class="cinta-pista">
+    {% for _ in range(2) %}{% for m in modelos %}<span>{{ m }}</span><span>/</span>{% endfor %}{% endfor %}
+  </div>
+</div>
+
+<div class="envoltura">
+  <div class="cifras">
+    <div class="cifra revela"><b data-cuenta="{{ cifras.herramientas }}">0</b><span>herramientas en la base</span></div>
+    <div class="cifra revela"><b data-cuenta="{{ cifras.causas }}">0</b><span>causas de falla documentadas</span></div>
+    <div class="cifra revela"><b data-cuenta="{{ cifras.reglas }}">0</b><span>reglas síntoma → causa</span></div>
+    <div class="cifra revela"><b data-cuenta="{{ cifras.casos }}">0</b><span>casos de garantía (simulados)</span></div>
+    <div class="cifra revela"><b data-cuenta="{{ cifras.ordenes }}">0</b><span>equipos recibidos</span></div>
+  </div>
+
+  <div class="modulos tres">
+    <a class="modulo revela" href="{{ url_for('recepcion_inicio') }}">
+      <span class="num">MÓDULO 01</span>
+      <h2>Recepción<br>de equipos</h2>
+      <p>Cliente por cédula o RUC, modelo y número de serie, celular, lo que cuenta el
+        cliente y los accesorios. Genera la orden con su sticker.</p>
+      <ul><li class="chapa">Sticker con código</li><li class="chapa">Busca por serie</li></ul>
+      <span class="ir">→</span>
+    </a>
+    <a class="modulo revela" href="{{ url_for('diagnostico') }}">
+      <span class="num">MÓDULO 02</span>
+      <h2>Diagnóstico<br>de fallas</h2>
+      <p>Taladros, amoladoras, rotomartillos y la línea LXT 18V. Marcás los síntomas y el
+        sistema cruza reglas con el historial de casos para ordenar las causas.</p>
+      <ul><li class="chapa">No enciende</li><li class="chapa">Chispea</li><li class="chapa">Se calienta</li></ul>
+      <span class="ir">→</span>
+    </a>
+    <a class="modulo revela" href="{{ url_for('tablero') }}">
+      <span class="num">MÓDULO 03</span>
+      <h2>Tablero de<br>garantías</h2>
+      <p>Casos por mes, fallas por modelo, tiempo de resolución por sucursal y una matriz
+        herramienta × causa. Con filtros y lecturas listas para decidir.</p>
+      <ul><li class="chapa">Pandas</li><li class="chapa">SLA {{ 15 }} días</li><li class="chapa">5 sucursales</li></ul>
+      <span class="ir">→</span>
+    </a>
+  </div>
+
+  <section class="metodo">
+    <div class="revela">
+      <span class="rotulo">Cómo decide</span>
+      <h3>Sin magia: reglas y taller.</h3>
+    </div>
+    <ol class="pasos">
+      <li class="revela"><div><b>Cada síntoma apunta a varias causas con un peso.</b>
+        <p>«Chispea por las rejillas» apunta fuerte a inducido en corto y colector gastado, y más
+          débil a carbones. Las reglas viven en la tabla <code>regla</code>.</p></div></li>
+      <li class="revela"><div><b>Los síntomas se combinan, no se suman.</b>
+        <p>Se usa un O ruidoso: <code>1 − Π(1 − peso)</code>. Dos señales sobre la misma causa la
+          refuerzan, pero nunca pasan del 100 %.</p></div></li>
+      <li class="revela"><div><b>El historial desempata.</b>
+        <p>Entre dos causas con evidencia parecida, sube la que más aparece en los casos de garantía
+          de ese mismo modelo.</p></div></li>
+      <li class="revela"><div><b>Solo se muestra lo que aplica.</b>
+        <p>Una DGA404 sin carbones no te va a sugerir cambiarlos; una 5007N a cable no te va a
+          preguntar por la batería.</p></div></li>
+    </ol>
+  </section>
+</div>
+{% endblock %}
